@@ -1,0 +1,16 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3>{{ contact.name }}</h3>
+        <div>
+            <img [src]="contact.imageUrl" alt="{{ contact.name }}" class="img-responsive" style="max-height: 100px;">
+            <div>
+                <a [routerLink]="['edit']" class="btn btn-primary">Edit</a>
+                <a class="btn btn-danger" (click)="onDelete()">Delete</a>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <p><span style="font-weight: bold;">Email: </span>{{ contact.email }}</p>
+        <p><span style="font-weight: bold;">Phone: </span>{{ contact.phone }}</p>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+<div class="row">
+    <div class="col-md-5">
+        <app-contact-list></app-contact-list>
+    </div>
+    <div class="col-md-4">
+        <!-- <app-contact-details
+        *ngIf="selectedContact; else infoText" 
+        [contact]="selectedContact"></app-contact-details>
+        <ng-template #infoText>
+            <h3>Please select a Contact!</h3>
+        </ng-template> -->
+        <router-outlet></router-outlet>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+<div class="panel-group">
+<div class="row panel panel-default">
+    <div class="row">
+        <div class="col-xs-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <div class="row">
+                <span class="title pad-left-right">Contacts</span>
+              </div>
+              <div class="row">
+                <div class="input-group pull-left pad-left-right col-xs-7">
+                  <!-- Add the search box input field here -->
+                    <input 
+                    #searchBox 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="Enter a Search Value" 
+                    (keyup)="search(searchBox.value)"
+                    >
+                  <div class="glyphicon glyphicon-search input-group-addon" (click)="search(searchBox.value)"></div>
+                </div>
+                <div class="pull-right pad-left-right">
+                  <a class="btn btn-success" [routerLink]="['new']">New Contact</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+
+<div class="row panel panel-default">
+    <div class="col-xs-12 panel-body" 
+    cdkDropList
+    #contactList="cdkDropList"
+    [cdkDropListData]="contacts"
+    [cdkDropListConnectedTo]="['groupList']">
+        <app-contact-item
+        *ngFor="let contactEl of contacts | contactsFilter: term" 
+        [contact]="contactEl"
+        [index]="contactEl.id"
+        cdkDrag
+        [cdkDragData]="contactEl"
+        ></app-contact-item>
+    </div>
+</div>
+</div>

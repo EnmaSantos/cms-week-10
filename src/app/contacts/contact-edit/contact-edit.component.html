@@ -1,0 +1,125 @@
+<div class="panel panel-default">
+    <div class="panel-body">
+      <form #f="ngForm" (ngSubmit)="onSubmit()" id="contact-edit">
+        <div class="row">
+          <div class="col-sm-12 form-group">
+            <label for="name">Name:</label>
+            <input
+              [ngModel]="contact?.name"
+              #name="ngModel"
+              name="name"
+              type="text"
+              id="name"
+              class="form-control required"
+              size="120"
+              max="120"
+              required
+              >
+          </div>
+        </div>
+  
+        <div class="row">
+          <div class="col-sm-12 form-group">
+            <label for="email">Email:</label>
+            <input
+              [ngModel]="contact?.email"
+              #email="ngModel"
+              name="email"
+              type="text"
+              id="email"
+              class="form-control required"
+              size="120"
+              max="255"
+              required
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$"
+              >
+          </div>
+          <div *ngIf="email.invalid && email.touched">Enter a valid Email address.</div>
+        </div>
+  
+        <div class="row">
+          <div class="col-sm-12 form-group">
+            <label for="phone">Phone:</label>
+            <input
+              [ngModel]="contact?.phone"
+              #phone="ngModel"
+              name="phone"
+              type="text"
+              id="phone"
+              class="form-control invalid"
+              size="150"
+              max="255"
+              pattern="\D*([2-9]\d{2})(\D*)([2-9]\d{2})(\D*)(\d{4})\D*"
+              >
+          </div>
+          <div *ngIf="phone.invalid && phone.touched">Enter a valid phone number.</div>
+        </div>
+  
+        <div class="row">
+          <div class="col-sm-12 form-group">
+            <label for="imageUrl">Image URL:</label>
+            <input
+              [ngModel]="contact?.imageUrl"
+              #imageUrl="ngModel"
+              name="imageUrl"
+              type="text"
+              id="imageUrl"
+              class="form-control"
+              size="150"
+              max="255">
+          </div>
+        </div>
+  
+        <div class="row">
+          <div class="form-group">
+            <label for="groupList">Group Contacts:</label>
+  
+            <div class="row" id="groupList"
+                style="min-height: 3rem;" 
+                cdkDropList
+                #groupList="cdkDropList"
+                [cdkDropListData]="groupContacts"
+                [cdkDropListConnectedTo]="['contactList']"
+                (cdkDropListDropped)="onDrop($event)"
+                >
+  
+              <div *ngFor="let contact of groupContacts; let i = index" cdkDrag [cdkDragData]="contact">
+                <div>
+                  <app-contact-item class="col-sm-11" [contact]="contact"></app-contact-item>
+                  <button class="btn btn-danger col-sm-2 deleteButton" (click)="onRemoveItem(i, $event)">X</button>
+                </div>
+              </div>
+              <span class="dragMsg" *ngIf="!groupContacts?.length">Drag contacts in group here</span>
+
+            </div>
+  
+          </div>
+        </div>
+  
+  
+          <!-- Error Message Div -->
+        <div 
+        class="alert alert-danger" 
+        *ngIf="(name.invalid && !name.touched) || (email.invalid && !email.touched)"
+        >
+            The Name and Email fields are required.
+        </div>
+
+
+        <div class="row">
+          <div class="col-xs-12 btn-toolbar">
+            <button 
+            class="btn btn-success" 
+            type="submit"
+            *ngIf="f.valid"
+            >
+                Save
+            </button>
+            <button class="btn btn-primary" type="button" (click)="onCancel()">Cancel</button>
+          </div>
+        </div>
+  
+      </form>
+    </div>
+  </div>
+  
