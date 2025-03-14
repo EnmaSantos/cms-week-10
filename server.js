@@ -4,19 +4,24 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const app = express();
 
-// Import routes
-const appRoutes = require('./server/routes/app');
+// Get defined routing files
+var index = require('./server/routes/app');
+const messageRoutes = require('./server/routes/messages');
+const contactRoutes = require('./server/routes/contacts');
+const documentsRoutes = require('./server/routes/documents');
 
 // Parsers for POST data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Point static path to Angular app build directory
-// This is the most important line to fix your issue!
+// Point static path to dist
 app.use(express.static(path.join(__dirname, 'dist/cms-project/browser')));
 
-// Set our API routes
-app.use('/api', appRoutes);
+// Tell express to map the default route ("/") to the index route
+app.use('/', index);
+app.use('/messages', messageRoutes);
+app.use('/contacts', contactRoutes);
+app.use('/documents', documentsRoutes);
 
 // For all other routes, send to Angular app
 // This must come AFTER the API routes
