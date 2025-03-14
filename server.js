@@ -4,28 +4,34 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const app = express();
 
-// API file for interacting with MongoDB
+// Import routes
 const appRoutes = require('./server/routes/app');
 
-// Parsers
+// Parsers for POST data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Angular DIST output folder
-app.use(express.static(path.join(__dirname, 'dist/cms-project')));
+// Point static path to Angular app build directory
+// This is the most important line to fix your issue!
+app.use(express.static(path.join(__dirname, 'dist/cms-project/browser')));
 
-// API location
-app.use('/', appRoutes);
+// Set our API routes
+app.use('/api', appRoutes);
 
-// Send all other requests to the Angular app
+// For all other routes, send to Angular app
+// This must come AFTER the API routes
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist/cms-project/browser/index.html'));
+  res.sendFile(path.join(__dirname, 'dist/cms-project/browser/index.html'));
 });
 
-// Set Port
+// Set port
 const port = process.env.PORT || '3000';
 app.set('port', port);
 
+// Create HTTP server
 const server = http.createServer(app);
 
-server.listen(port, () => console.log(`Running on localhost:${port}`));
+// Listen on port
+server.listen(port, () => {
+  console.log(`Server running on localhost:${port}`);
+});
