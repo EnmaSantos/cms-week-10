@@ -1,4 +1,5 @@
 var express = require('express');
+var path = require('path'); // Add this import
 var router = express.Router();
 
 /* GET home page. */
