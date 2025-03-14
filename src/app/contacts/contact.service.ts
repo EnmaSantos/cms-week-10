@@ -52,7 +52,7 @@ export class ContactService {
     storeContacts() {
         let contacts = JSON.stringify(this.contacts);
         let headers = new HttpHeaders();
-        headers.set('Content-Type', 'application/json');
+        headers = headers.set('Content-Type', 'application/json'); // Fixed
         this.http.put(this.baseUrl + 'contacts.json', contacts, {headers: headers})
           .subscribe(() => {
             this.contactListChangedEvent.next(this.contacts.slice());

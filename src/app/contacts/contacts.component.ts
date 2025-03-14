@@ -9,7 +9,7 @@ import { ContactService } from './contact.service';
   
   templateUrl: './contacts.component.html',
   styleUrl: './contacts.component.css',
-  providers: [ContactService]
+
 })
 export class ContactsComponent implements OnInit {
   selectedContact: Contact;
