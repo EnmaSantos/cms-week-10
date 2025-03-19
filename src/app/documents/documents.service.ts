@@ -15,7 +15,20 @@ export class DocumentService {
   constructor(private http: HttpClient) {}
 
   getDocuments() {
-    return this.http.get<Document[]>('http://localhost:3000/documents');
+    // Subscribe to the HTTP result and update the local documents array
+    this.http.get<Document[]>('http://localhost:3000/documents')
+      .subscribe(
+        (documents: Document[]) => {
+          this.documents = documents;
+          this.sortAndSend();
+        },
+        (error: any) => {
+          console.error(error);
+        }
+      );
+    
+    // Return the subject as an observable for components to subscribe to
+    return this.documentListChangedEvent;
   }
 
   addDocument(document: Document) {
@@ -91,12 +104,13 @@ export class DocumentService {
   }
 
   getDocument(id: string) {
-    for (let document of this.documents) {
-      if (document.id === id) {
-        return document;
-      }
+    // First make sure the documents array is populated
+    if (!this.documents || this.documents.length === 0) {
+      return null;
     }
-    return null;
+    
+    // Find and return the document
+    return this.documents.find(document => document.id === id);
   }
 
   sortAndSend() {

@@ -9,14 +9,25 @@ import { Message } from './message.model';
 })
 export class MessageService {
   messageListChangedEvent = new Subject<Message[]>();
-  // Add this event emitter
   messageChangedEvent = new EventEmitter<Message[]>();
   private messages: Message[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.getMessages();
+  }
 
   getMessages() {
-    return this.http.get<Message[]>('http://localhost:3000/messages');
+    this.http.get<Message[]>('http://localhost:3000/messages')
+      .subscribe(
+        (messages: Message[]) => {
+          this.messages = messages;
+          this.messageChangedEvent.emit(this.messages.slice());
+        },
+        (error: any) => {
+          console.log('Error fetching messages:', error);
+        }
+      );
+    return this.messageChangedEvent;
   }
 
   getMessage(id: string): Message {
@@ -28,17 +39,23 @@ export class MessageService {
       return;
     }
 
+    // make sure id of the new Message is empty
     message.id = '';
 
     const headers = new HttpHeaders({'Content-Type': 'application/json'});
 
+    // add to database
     this.http.post<{ message: string, newMessage: Message }>('http://localhost:3000/messages',
       message,
       { headers: headers })
       .subscribe(
         (responseData) => {
+          // add new message to messages
           this.messages.push(responseData.newMessage);
-          this.messageListChangedEvent.next(this.messages.slice());
+          this.messageChangedEvent.emit(this.messages.slice());
+        },
+        (error: any) => {
+          console.log('Error adding message:', error);
         }
       );
   }
@@ -63,7 +80,7 @@ export class MessageService {
       .subscribe(
         (response: any) => {
           this.messages[pos] = newMessage;
-          this.messageListChangedEvent.next(this.messages.slice());
+          this.messageChangedEvent.emit(this.messages.slice());
         }
       );
   }
@@ -82,7 +99,7 @@ export class MessageService {
       .subscribe(
         (response: any) => {
           this.messages.splice(pos, 1);
-          this.messageListChangedEvent.next(this.messages.slice());
+          this.messageChangedEvent.emit(this.messages.slice());
         }
       );
   }

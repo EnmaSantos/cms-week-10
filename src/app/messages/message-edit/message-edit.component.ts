@@ -1,28 +1,45 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 
 import { Message } from '../message.model';
 import { MessageService } from '../message.service';
+import { Contact } from '../../contacts/contact.model';
+import { ContactService } from '../../contacts/contact.service';
 
 @Component({
   selector: 'app-message-edit',
-  standalone: false,
-  
   templateUrl: './message-edit.component.html',
-  styleUrl: './message-edit.component.css'
+  styleUrl: './message-edit.component.css',
+  standalone: false
 })
-export class MessageEditComponent {
+export class MessageEditComponent implements OnInit {
   @ViewChild('subject') subject: ElementRef;
   @ViewChild('msgText') msgText: ElementRef;
-  currentSender: string = 'Enmanuel';
+  currentSender: string = '7'; // Using a valid ID from MOCKMESSAGES
 
-  constructor(private messageService: MessageService) { }
+  constructor(private messageService: MessageService, 
+              private contactService: ContactService) { }
 
+  ngOnInit() {
+    // Initialize any required data
+  }
 
   onSendMessage() {
     const subjectValue = this.subject.nativeElement.value;
     const msgTextValue = this.msgText.nativeElement.value;
-    const newMessage = new Message('1', subjectValue, msgTextValue, this.currentSender);
+    
+    // Validate that we have content
+    if (!subjectValue.trim() || !msgTextValue.trim()) {
+      return;
+    }
+
+    // Create a new message with the sender id
+    const newMessage = new Message('', subjectValue, msgTextValue, this.currentSender);
+    
+    // Add the message via the service
     this.messageService.addMessage(newMessage);
+    
+    // Clear the form
+    this.onClear();
   }
 
   onClear() {
@@ -34,5 +51,4 @@ export class MessageEditComponent {
       this.msgText.nativeElement.value = '';
     }
   }
-
 }

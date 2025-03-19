@@ -1,36 +1,37 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Message } from '../message.model';
 import { MessageService } from '../message.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-message-list',
-  standalone: false,
-  
   templateUrl: './message-list.component.html',
-  styleUrl: './message-list.component.css'
+  styleUrl: './message-list.component.css',
+  standalone: false
 })
-export class MessageListComponent implements OnInit {
+export class MessageListComponent implements OnInit, OnDestroy {
   messages: Message[] = [];
+  subscription: Subscription;
 
   constructor(private messageService: MessageService) { }
 
   ngOnInit() {
-    this.messageService.getMessages().subscribe(
-      (messages: Message[]) => {
-        this.messages = messages;
-      }
-    );
-    this.messageService.messageChangedEvent
+    this.subscription = this.messageService.messageChangedEvent
       .subscribe(
         (messages: Message[]) => {
           this.messages = messages;
         }
       );
+    
+    // Initial fetch of messages
+    this.messageService.getMessages();
   }
 
   onAddMessage(message: Message) {
-    this.messages.push(message);
-    console.log('Message added!');
+    this.messageService.addMessage(message);
   }
 
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
 }
