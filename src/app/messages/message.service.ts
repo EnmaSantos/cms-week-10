@@ -13,10 +13,10 @@ export class MessageService {
   private messages: Message[] = [];
 
   constructor(private http: HttpClient) {
-    this.getMessages();
+    this.fetchMessages();
   }
 
-  getMessages() {
+  fetchMessages() {
     this.http.get<Message[]>('http://localhost:3000/messages')
       .subscribe(
         (messages: Message[]) => {
@@ -27,6 +27,10 @@ export class MessageService {
           console.log('Error fetching messages:', error);
         }
       );
+  }
+
+  getMessages() {
+    this.fetchMessages();
     return this.messageChangedEvent;
   }
 
@@ -39,23 +43,38 @@ export class MessageService {
       return;
     }
 
-    // make sure id of the new Message is empty
-    message.id = '';
+    // Log the message to debug
+    console.log('Sending message to server:', message);
+
+    // Make sure id is not included or is empty
+    const messageToSend = {
+      subject: message.subject,
+      msgText: message.msgText,
+      sender: message.sender
+    };
 
     const headers = new HttpHeaders({'Content-Type': 'application/json'});
 
-    // add to database
-    this.http.post<{ message: string, newMessage: Message }>('http://localhost:3000/messages',
-      message,
+    this.http.post<any>('http://localhost:3000/messages',
+      messageToSend,
       { headers: headers })
       .subscribe(
         (responseData) => {
-          // add new message to messages
-          this.messages.push(responseData.newMessage);
-          this.messageChangedEvent.emit(this.messages.slice());
+          console.log('Server response:', responseData);
+          // Refresh messages from server
+          this.fetchMessages();
         },
         (error: any) => {
-          console.log('Error adding message:', error);
+          console.error('Error adding message:', error);
+          // As a fallback, add message locally so UI updates
+          const tempMessage = new Message(
+            (this.messages.length + 1).toString(),
+            message.subject,
+            message.msgText, 
+            message.sender
+          );
+          this.messages.push(tempMessage);
+          this.messageChangedEvent.emit(this.messages.slice());
         }
       );
   }
@@ -71,16 +90,17 @@ export class MessageService {
     }
 
     newMessage.id = originalMessage.id;
-    newMessage._id = originalMessage._id;
-
+    
     const headers = new HttpHeaders({'Content-Type': 'application/json'});
 
     this.http.put('http://localhost:3000/messages/' + originalMessage.id,
       newMessage, { headers: headers })
       .subscribe(
-        (response: any) => {
-          this.messages[pos] = newMessage;
-          this.messageChangedEvent.emit(this.messages.slice());
+        () => {
+          this.fetchMessages();
+        },
+        (error: any) => {
+          console.error('Error updating message:', error);
         }
       );
   }
@@ -97,9 +117,11 @@ export class MessageService {
 
     this.http.delete('http://localhost:3000/messages/' + message.id)
       .subscribe(
-        (response: any) => {
-          this.messages.splice(pos, 1);
-          this.messageChangedEvent.emit(this.messages.slice());
+        () => {
+          this.fetchMessages();
+        },
+        (error: any) => {
+          console.error('Error deleting message:', error);
         }
       );
   }
