@@ -15,6 +15,20 @@ const documentRoutes = require('./server/routes/documents');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// Add CORS headers middleware
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  next();
+});
+
 // Point static path to dist
 app.use(express.static(path.join(__dirname, 'dist/cms-project/browser')));
 
@@ -50,3 +64,4 @@ mongoose.connect('mongodb://localhost:27017/cms', { useNewUrlParser: true })
   .catch(err => {
     console.log('Connection failed: ' + err);
   });
+
