@@ -1,51 +1,33 @@
-import { EventEmitter, Injectable, OnInit } from "@angular/core";
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Subject, Observable, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
-import { Message } from "./message.model";
-import { MOCKMESSAGES } from "./MOCKMESSAGES";
+import { Message } from './message.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class MessageService implements OnInit {
-  messageChangedEvent = new EventEmitter<Message[]>();
+export class MessageService {
   messageListChangedEvent = new Subject<Message[]>();
-  messages: Message[] = [];
-  maxMessageId: number;
-  
-  private baseUrl = 'https://cms-firebase-project-default-rtdb.firebaseio.com/';
+  private messages: Message[] = [];
 
-  constructor(private http: HttpClient) {
-    this.maxMessageId = this.getMaxId();
+  constructor(private http: HttpClient) {}
+
+  getMessages() {
+    this.http.get<Message[]>('http://localhost:3000/messages')
+      .subscribe(
+        (messages: Message[]) => {
+          this.messages = messages;
+          this.messageListChangedEvent.next(this.messages.slice());
+        },
+        (error: any) => {
+          console.log(error);
+        }
+      );
   }
 
-  ngOnInit() {
-  }
-
-  getMessages(): Observable<Message[]> {
-    return this.http.get<Message[]>(this.baseUrl + 'messages.json').pipe(
-      map((messages: Message[] | null) => {
-        this.messages = messages ? messages : [];
-        this.maxMessageId = this.getMaxId();
-        this.messageListChangedEvent.next(this.messages.slice());
-        return this.messages;
-      }),
-      catchError(error => {
-        console.error('Error fetching messages:', error);
-        return of([]);
-      })
-    );
-  }
-
-  getMessage(id: string) {
-    for (let message of this.messages) {
-      if (message.id === id) {
-        return message;
-      }
-    }
-    return null;
+  getMessage(id: string): Message {
+    return this.messages.find(message => message.id === id);
   }
 
   addMessage(message: Message) {
@@ -53,11 +35,19 @@ export class MessageService implements OnInit {
       return;
     }
 
-    // make sure id of the new Message is empty
-    this.maxMessageId++;
-    message.id = this.maxMessageId.toString();
-    this.messages.push(message);
-    this.storeMessages();
+    message.id = '';
+
+    const headers = new HttpHeaders({'Content-Type': 'application/json'});
+
+    this.http.post<{ message: string, newMessage: Message }>('http://localhost:3000/messages',
+      message,
+      { headers: headers })
+      .subscribe(
+        (responseData) => {
+          this.messages.push(responseData.newMessage);
+          this.messageListChangedEvent.next(this.messages.slice());
+        }
+      );
   }
 
   updateMessage(originalMessage: Message, newMessage: Message) {
@@ -70,20 +60,17 @@ export class MessageService implements OnInit {
       return;
     }
 
-    // set the id of the new Message to the id of the old Message
     newMessage.id = originalMessage.id;
+    newMessage._id = originalMessage._id;
 
     const headers = new HttpHeaders({'Content-Type': 'application/json'});
 
-    // update database
-    this.http.put(
-      'https://cms-firebase-project-default-rtdb.firebaseio.com/messages/' + originalMessage.id + '.json',
-      newMessage,
-      { headers: headers })
+    this.http.put('http://localhost:3000/messages/' + originalMessage.id,
+      newMessage, { headers: headers })
       .subscribe(
-        () => {
+        (response: any) => {
           this.messages[pos] = newMessage;
-          this.storeMessages();
+          this.messageListChangedEvent.next(this.messages.slice());
         }
       );
   }
@@ -98,39 +85,12 @@ export class MessageService implements OnInit {
       return;
     }
 
-    // delete from database
-    this.http.delete('https://cms-firebase-project-default-rtdb.firebaseio.com/messages/' + message.id + '.json')
+    this.http.delete('http://localhost:3000/messages/' + message.id)
       .subscribe(
-        () => {
+        (response: any) => {
           this.messages.splice(pos, 1);
-          this.storeMessages();
+          this.messageListChangedEvent.next(this.messages.slice());
         }
       );
-  }
-
-  storeMessages() {
-    let messagesToSend = JSON.stringify(this.messages);
-    const headers = new HttpHeaders({'Content-Type': 'application/json'});
-
-    this.http.put(
-      'https://cms-firebase-project-default-rtdb.firebaseio.com/messages.json',
-      messagesToSend,
-      { headers: headers })
-      .subscribe(
-        () => {
-          this.messageListChangedEvent.next([...this.messages]);
-        }
-      );
-  }
-
-  getMaxId(): number {
-    let maxId = 0;
-    for (const message of this.messages) {
-      const currentId = parseInt(message.id);
-      if (currentId > maxId) {
-        maxId = currentId;
-      }
-    }
-    return maxId;
   }
 }
