@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
 
@@ -9,21 +9,13 @@ import { Contact } from './contact.model';
 })
 export class ContactService {
   contactListChangedEvent = new Subject<Contact[]>();
+  contactSelectedEvent = new EventEmitter<Contact>();
   private contacts: Contact[] = [];
 
   constructor(private http: HttpClient) {}
 
   getContacts() {
-    this.http.get<Contact[]>('http://localhost:3000/contacts')
-      .subscribe(
-        (contacts: Contact[]) => {
-          this.contacts = contacts;
-          this.sortAndSend();
-        },
-        (error: any) => {
-          console.log(error);
-        }
-      );
+    return this.http.get<Contact[]>('http://localhost:3000/contacts');
   }
 
   getContact(id: string): Contact {

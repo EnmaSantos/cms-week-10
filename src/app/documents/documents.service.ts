@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
 
@@ -9,21 +9,13 @@ import { Document } from './document.model';
 })
 export class DocumentService {
   documentListChangedEvent = new Subject<Document[]>();
+  documentSelectedEvent = new EventEmitter<Document>();
   private documents: Document[] = [];
 
   constructor(private http: HttpClient) {}
 
   getDocuments() {
-    this.http.get<Document[]>('http://localhost:3000/documents')
-      .subscribe(
-        (documents: Document[]) => {
-          this.documents = documents;
-          this.sortAndSend();
-        },
-        (error: any) => {
-          console.log(error);
-        }
-      );
+    return this.http.get<Document[]>('http://localhost:3000/documents');
   }
 
   addDocument(document: Document) {

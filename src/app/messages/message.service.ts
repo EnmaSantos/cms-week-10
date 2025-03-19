@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
 
@@ -9,21 +9,14 @@ import { Message } from './message.model';
 })
 export class MessageService {
   messageListChangedEvent = new Subject<Message[]>();
+  // Add this event emitter
+  messageChangedEvent = new EventEmitter<Message[]>();
   private messages: Message[] = [];
 
   constructor(private http: HttpClient) {}
 
   getMessages() {
-    this.http.get<Message[]>('http://localhost:3000/messages')
-      .subscribe(
-        (messages: Message[]) => {
-          this.messages = messages;
-          this.messageListChangedEvent.next(this.messages.slice());
-        },
-        (error: any) => {
-          console.log(error);
-        }
-      );
+    return this.http.get<Message[]>('http://localhost:3000/messages');
   }
 
   getMessage(id: string): Message {
