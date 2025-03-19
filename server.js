@@ -3,12 +3,13 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 const app = express();
+const mongoose = require('mongoose');
 
 // Get defined routing files
 var index = require('./server/routes/app');
 const messageRoutes = require('./server/routes/messages');
 const contactRoutes = require('./server/routes/contacts');
-const documentsRoutes = require('./server/routes/documents');
+const documentRoutes = require('./server/routes/documents');
 
 // Parsers for POST data
 app.use(bodyParser.json());
@@ -21,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'dist/cms-project/browser')));
 app.use('/', index);
 app.use('/messages', messageRoutes);
 app.use('/contacts', contactRoutes);
-app.use('/documents', documentsRoutes);
+app.use('/documents', documentRoutes);
 
 // For all other routes, send to Angular app
 // This must come AFTER the API routes
@@ -40,3 +41,12 @@ const server = http.createServer(app);
 server.listen(port, () => {
   console.log(`Server running on localhost:${port}`);
 });
+
+// establish a connection to the mongo database
+mongoose.connect('mongodb://localhost:27017/cms', { useNewUrlParser: true })
+  .then(() => {
+    console.log('Connected to database!');
+  })
+  .catch(err => {
+    console.log('Connection failed: ' + err);
+  });
